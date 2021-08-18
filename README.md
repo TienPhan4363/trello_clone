@@ -69,4 +69,11 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
-Checkout branch ...
+# Packages
+SCSS
+eslint, eslint-plugin-react, eslint-plugin-react
+lodash
+npm audit fix ~ fix the probolem when installing a packages
+
+# Technique
+Array.prototype.sort()
