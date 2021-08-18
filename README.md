@@ -75,6 +75,7 @@ eslint, eslint-plugin-react, eslint-plugin-react
 lodash
 npm audit fix ~ fix the probolem when installing a packages
 react-smooth-dnd
+font-awesome - how to include an icon of font-awesome in react
 
 # Technique
 Array.prototype.sort()
