@@ -74,6 +74,7 @@ SCSS
 eslint, eslint-plugin-react, eslint-plugin-react
 lodash
 npm audit fix ~ fix the probolem when installing a packages
+react-smooth-dnd
 
 # Technique
 Array.prototype.sort()
