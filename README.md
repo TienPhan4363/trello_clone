@@ -72,7 +72,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 # Packages
 SCSS
 eslint, eslint-plugin-react, eslint-plugin-react
-lodash
+lodash - isEmpty, cloneDeep
 npm audit fix ~ fix the probolem when installing a packages
 react-smooth-dnd
 font-awesome - how to include an icon of font-awesome in react
