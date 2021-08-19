@@ -101,7 +101,30 @@ function BoardContents() {
         toggleOpenNewColumnForm();
     };
 
-    const handleColumnTitleChange = (e) => setNewColumnTitle(e.target.value);
+    const handleColumnTitleToAdd = (e) => setNewColumnTitle(e.target.value);
+
+    const onUpdateColumn = (newColumnToUpdate) => {
+        const columnIdToUpdate = newColumnToUpdate.id;
+
+        let newColumn = [...columns];
+        const columnIndexToUpdate = newColumn.findIndex(i => i.id === columnIdToUpdate);
+
+        if (newColumnToUpdate._destroy) {
+            //remove column
+            newColumn.splice(columnIndexToUpdate, 1);
+        }
+        else {
+            //update column infor
+            newColumn.splice(columnIndexToUpdate, 1, newColumnToUpdate);
+        }
+
+        let newBoard = { ...board };
+        newBoard.columnOrder = newColumn.map( col => col.id);
+        newBoard.columns = newColumn;
+
+        setColumns(newColumn);
+        setBoard(newBoard);
+    };
 
     return (
         <div className="board-contents">
@@ -118,7 +141,7 @@ function BoardContents() {
             >
                 {columns.map( (column, index) => (
                     <Draggable key={index}>
-                        <Column column={column} onCardDrop={onCardDrop} />
+                        <Column column={column} onCardDrop={onCardDrop} onUpdateColumn={ onUpdateColumn }/>
                     </Draggable>
                 ))}
             </Container>
@@ -141,7 +164,7 @@ function BoardContents() {
                                 className="input-enter-new-column"
                                 ref={ newColumnInputRef }
                                 value={ newColumnTitle }
-                                onChange={ handleColumnTitleChange }
+                                onChange={ handleColumnTitleToAdd }
                                 onKeyDown={ e => (e.key === 'Enter') && addNewColumn() }
                             />
                             <Button

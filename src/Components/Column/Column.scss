@@ -11,17 +11,56 @@ $column-height: calc(#{$board-content-height} - #{$gap * 3});
         background-color: $column-bg-color;
         padding: 0 8px;
     }
-    header {
-        padding-left: 15px;
+
+    header.column-drag-handle{
+        padding: 5px 8px;
         height: $column-header-height;
-        line-height: $column-header-height;
+        // line-height: $column-header-height;
         font-size: 16px;
         font-weight: bold;
         border-top-left-radius: $column-border-radius;
         border-top-right-radius: $column-border-radius;
+        cursor: move;
+        display: flex;
+        .column-title {
+            flex: 90%;
+        }
+        .column-dropdown-actions {
+            flex: 10%;
+            .dropdown-btn {
+                padding: 0 8px;
+                line-height: 26px;
+                font-size: 14px;
+                font-weight: bold;
+                letter-spacing: 1px;
+                color: $app-main-text-color;
+                background-color: $column-bg-color;
+                border-color: $column-bg-color;
+                &:after {
+                    content: '...';
+                    border: none;
+                }
+                &:hover {
+                    background-color: darken($column-bg-color, 10);
+                }
+            }
+            .dropdown-menu { //class of bootstrap
+                padding: 0;
+                line-height: 36px;
+                min-width: 200px;
+                a.dropdown-item {
+                    padding: 0.1rem 1rem;
+                    font-size: 14px;
+                    &:not(:last-child){
+                        border-bottom: 1px solid darken($column-bg-color, 10);
+                    }
+                }
+            }
+        }
     }
 
     .card-list {
+        padding-top: 10px;
         margin: 0;
         max-height: calc(#{$column-height} - #{$column-header-height} - #{$column-footer-height});
         overflow-y: auto;
@@ -36,10 +75,7 @@ $column-height: calc(#{$board-content-height} - #{$gap * 3});
             border-right: 5px solid $column-bg-color;
         }
     }
-    .column-drag-handle{
-        cursor: move;
-        padding: 5px;
-    }
+
     .card-ghost {
         transition: transform 0.18s ease;
         transform: rotateZ(5deg);
