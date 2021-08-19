@@ -48,6 +48,9 @@
         border-radius: $column-border-radius;
         .input-enter-new-column {
             margin: 5px 0;
+            &:focus {
+                border-color: $input-border-color;
+            }
         }
 
         .cancel-new-column {

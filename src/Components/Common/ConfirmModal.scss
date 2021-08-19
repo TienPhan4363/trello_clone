@@ -1,0 +1,15 @@
+@import '_setting.scss';
+
+.btn:focus, .btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+.modal-close-icon {
+    color: $app-main-text-color;
+    background-color: $column-bg-color !important;
+    border-color: $column-bg-color !important;
+    &:hover {
+        border-color: $column-bg-color;
+        background-color: darken($column-bg-color, 10);
+    }
+}
