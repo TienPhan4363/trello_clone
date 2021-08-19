@@ -15,10 +15,14 @@ function BoardContents() {
     const [board, setBoard] = useState({});
     const [columns, setColumns] = useState({});
     const [openNewColumnForm, setOpenNewColumnForm] = useState(false);
+    const toggleOpenNewColumnForm = () => {
+        setOpenNewColumnForm(!openNewColumnForm);
+    };
 
     const newColumnInputRef = useRef(null);
 
     const [newColumnTitle, setNewColumnTitle] = useState('');
+    const handleColumnTitleToAdd = (e) => setNewColumnTitle(e.target.value);
 
     useEffect( () => {
         const boardFromDB = initData.boards.find( board => board.id === 'board-1');
@@ -70,10 +74,6 @@ function BoardContents() {
         }
     };
 
-    const toggleOpenNewColumnForm = () => {
-        setOpenNewColumnForm(!openNewColumnForm);
-    };
-
     const addNewColumn = () => {
         if (!newColumnTitle) {
             newColumnInputRef.current.focus();
@@ -82,7 +82,7 @@ function BoardContents() {
 
         const newColumnToAdd = {
             id: Math.random().toString(36).substr(2, 5), //set id by 5 random characters, will replace later with API
-            boardID: board.id,
+            boardId: board.id,
             title: newColumnTitle.trim(),
             cardOrder: [],
             cards: []
@@ -101,8 +101,6 @@ function BoardContents() {
         toggleOpenNewColumnForm();
     };
 
-    const handleColumnTitleToAdd = (e) => setNewColumnTitle(e.target.value);
-
     const onUpdateColumn = (newColumnToUpdate) => {
         const columnIdToUpdate = newColumnToUpdate.id;
 
@@ -115,6 +113,7 @@ function BoardContents() {
         }
         else {
             //update column infor
+            // console.log(newColumnToUpdate);
             newColumn.splice(columnIndexToUpdate, 1, newColumnToUpdate);
         }
 
@@ -141,7 +140,11 @@ function BoardContents() {
             >
                 {columns.map( (column, index) => (
                     <Draggable key={index}>
-                        <Column column={column} onCardDrop={onCardDrop} onUpdateColumn={ onUpdateColumn }/>
+                        <Column
+                            column={column}
+                            onCardDrop={onCardDrop}
+                            onUpdateColumn={ onUpdateColumn }
+                        />
                     </Draggable>
                 ))}
             </Container>
@@ -160,12 +163,13 @@ function BoardContents() {
                             <Form.Control
                                 size="sm"
                                 type="text"
-                                placeholder="Enter new title..."
+                                placeholder="Enter new column title..."
                                 className="input-enter-new-column"
                                 ref={ newColumnInputRef }
                                 value={ newColumnTitle }
                                 onChange={ handleColumnTitleToAdd }
                                 onKeyDown={ e => (e.key === 'Enter') && addNewColumn() }
+                                onBlur={ toggleOpenNewColumnForm }
                             />
                             <Button
                                 variant="success"
@@ -175,7 +179,7 @@ function BoardContents() {
                                 Add new list
                             </Button>
                             <span
-                                className="cancel-new-column"
+                                className="cancel-icon"
                                 onClick={ toggleOpenNewColumnForm }
                             >
                                 <i className="fa fa-trash icon"/>
