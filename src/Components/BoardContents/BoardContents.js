@@ -9,11 +9,11 @@ import './BoardContents.scss';
 import Column from 'Components/Column/Column';
 import { mapOrder } from 'Utilities/sorts';
 import { applyDrag } from 'Utilities/dragDrop';
-import { initData } from 'Actions/initData';
+import { fetchBoardDetails } from 'Actions/ApiCall';
 
 function BoardContents() {
     const [board, setBoard] = useState({});
-    const [columns, setColumns] = useState({});
+    const [columns, setColumns] = useState([]);
     const [openNewColumnForm, setOpenNewColumnForm] = useState(false);
     const toggleOpenNewColumnForm = () => {
         setOpenNewColumnForm(!openNewColumnForm);
@@ -25,12 +25,11 @@ function BoardContents() {
     const handleColumnTitleToAdd = (e) => setNewColumnTitle(e.target.value);
 
     useEffect( () => {
-        const boardFromDB = initData.boards.find( board => board.id === 'board-1');
-        if (boardFromDB) {
-            setBoard(boardFromDB);
-
-            setColumns(mapOrder(boardFromDB.columns, boardFromDB.columnOrder, 'id'));
-        }
+        const boardId = '61236bce9937527c34c119f2';
+        fetchBoardDetails(boardId).then( board => {
+            setBoard(board);
+            setColumns(mapOrder(board.columns, board.columnOrder, '_id'));
+        });
     }, []);
 
     useEffect( () => {
@@ -54,7 +53,7 @@ function BoardContents() {
         newColumns = applyDrag(newColumns, dropResult);
 
         let newBoard = { ...board };
-        newBoard.columnOrder = newColumns.map( col => col.id);
+        newBoard.columnOrder = newColumns.map( col => col._id);
         newBoard.columns = newColumns;
 
         setColumns(newColumns);
@@ -65,9 +64,9 @@ function BoardContents() {
         if ( dropResult.removedIndex !== null || dropResult.addedIndex !== null) {
             let newColumns = [...columns];
 
-            let currentColumn = newColumns.find( col => col.id === columnId);
+            let currentColumn = newColumns.find( col => col._id === columnId);
             currentColumn.cards = applyDrag(currentColumn.cards, dropResult);
-            currentColumn.cardOrder = currentColumn.cards.map(item => item.id);
+            currentColumn.cardOrder = currentColumn.cards.map(item => item._id);
 
             setColumns(newColumns);
             // console.log(currentColumn);
@@ -82,7 +81,7 @@ function BoardContents() {
 
         const newColumnToAdd = {
             id: Math.random().toString(36).substr(2, 5), //set id by 5 random characters, will replace later with API
-            boardId: board.id,
+            boardId: board._id,
             title: newColumnTitle.trim(),
             cardOrder: [],
             cards: []
@@ -92,7 +91,7 @@ function BoardContents() {
         newColumn.push( newColumnToAdd );
 
         let newBoard = { ...board };
-        newBoard.columnOrder = newColumn.map( col => col.id);
+        newBoard.columnOrder = newColumn.map( col => col._id);
         newBoard.columns = newColumn;
 
         setColumns(newColumn);
@@ -102,10 +101,10 @@ function BoardContents() {
     };
 
     const onUpdateColumn = (newColumnToUpdate) => {
-        const columnIdToUpdate = newColumnToUpdate.id;
+        const columnIdToUpdate = newColumnToUpdate._id;
 
         let newColumn = [...columns];
-        const columnIndexToUpdate = newColumn.findIndex(i => i.id === columnIdToUpdate);
+        const columnIndexToUpdate = newColumn.findIndex(i => i._id === columnIdToUpdate);
 
         if (newColumnToUpdate._destroy) {
             //remove column
@@ -118,7 +117,7 @@ function BoardContents() {
         }
 
         let newBoard = { ...board };
-        newBoard.columnOrder = newColumn.map( col => col.id);
+        newBoard.columnOrder = newColumn.map( col => col._id);
         newBoard.columns = newColumn;
 
         setColumns(newColumn);
@@ -169,7 +168,7 @@ function BoardContents() {
                                 value={ newColumnTitle }
                                 onChange={ handleColumnTitleToAdd }
                                 onKeyDown={ e => (e.key === 'Enter') && addNewColumn() }
-                                onBlur={ toggleOpenNewColumnForm }
+                                // onBlur={ toggleOpenNewColumnForm }
                             />
                             <Button
                                 variant="success"
