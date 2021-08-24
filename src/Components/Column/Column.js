@@ -11,24 +11,31 @@ import { mapOrder } from 'Utilities/sorts';
 import ConfirmModal from 'Components/Common/ConfirmModal';
 import { MODAL_ACTION_CLOSE, MODAL_ACTION_CONFIRM } from 'Utilities/constants';
 import { saveContentAfterPressEnter, selectAllInlineText } from 'Utilities/contentEditable';
+import { createNewCard, updateColumn } from 'Actions/ApiCall';
 
 function Column(props) {
-    const { column, onCardDrop, onUpdateColumn } = props;
+    const { column, onCardDrop, onUpdateColumnState } = props;
     const cards = mapOrder(column.cards, column.cardOrder, '_id');
 
     //Modal
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const toggleShowConfirmModal = () => setShowConfirmModal(!showConfirmModal);
+
+    //remove column
     const onConfirmModalAction = ( actionType ) => {
         if (actionType === MODAL_ACTION_CONFIRM) {
             const newColumn = {
                 ...column,
                 _destroy: true
             };
-            onUpdateColumn(newColumn);
+            //call API update column _destroy
+            updateColumn(newColumn._id, newColumn).then( updatedColumn => {
+                onUpdateColumnState(updatedColumn);
+            });
         }
         toggleShowConfirmModal();
     };
+
     //Column title
     const [columnTitle, setColumnTitle] = useState('');
     const handleColumnTitleChange = (e) => {
@@ -37,12 +44,21 @@ function Column(props) {
     useEffect( () => {
         setColumnTitle(column.title);
     }, [column.title]);
+
+    //update column title
     const handleColumnTitleBlur = () => {
-        const newColumn = {
-            ...column,
-            title: columnTitle
-        };
-        onUpdateColumn(newColumn);
+
+        if ( columnTitle !== column.title) {
+            const newColumn = {
+                ...column,
+                title: columnTitle
+            };
+            //call API update column title if column title state has some change
+            updateColumn(newColumn._id, newColumn).then( updatedColumn => {
+                updatedColumn.cards = newColumn.cards;
+                onUpdateColumnState(updatedColumn);
+            });
+        }
     };
 
     //Card form
@@ -69,23 +85,21 @@ function Column(props) {
         }
 
         const newCardToAdd = {
-            id: Math.random().toString(36).substr(2, 5), //set id by 5 random characters, will replace later with API
             title: newCardTitle.trim(),
             boardId: column.boardId,
-            columnId: column._id,
-            cover: null
+            columnId: column._id
         };
 
-        // console.log(column);
-        let newColumn = cloneDeep(column);
-        newColumn.cards.push(newCardToAdd);
-        newColumn.cardOrder.push(newCardToAdd._id);
+        //call API createNewCard
+        createNewCard(newCardToAdd).then( card => {
+            let newColumn = cloneDeep(column);
+            newColumn.cards.push(card);
+            newColumn.cardOrder.push(card._id);
 
-        // console.log(newColumn);
-        onUpdateColumn(newColumn);
-        setNewCardTitle('');
-        toggleOpenNewCardForm();
-
+            onUpdateColumnState(newColumn);
+            setNewCardTitle('');
+            toggleOpenNewCardForm();
+        });
     };
 
     return (
