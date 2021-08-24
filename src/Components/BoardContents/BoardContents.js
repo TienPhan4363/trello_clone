@@ -1,6 +1,6 @@
 //import lib
 import React, { useState, useEffect, useRef } from 'react';
-import { isEmpty } from 'lodash';
+import { isEmpty, cloneDeep } from 'lodash';
 import { Container, Draggable } from 'react-smooth-dnd';
 import { Container as BootstrapContainer, Row, Col, Form, Button } from 'react-bootstrap';
 
@@ -9,7 +9,7 @@ import './BoardContents.scss';
 import Column from 'Components/Column/Column';
 import { mapOrder } from 'Utilities/sorts';
 import { applyDrag } from 'Utilities/dragDrop';
-import { fetchBoardDetails, createNewColumn } from 'Actions/ApiCall';
+import { fetchBoardDetails, createNewColumn, updateBoard, updateColumn, updateCard } from 'Actions/ApiCall';
 
 function BoardContents() {
     const [board, setBoard] = useState({});
@@ -39,6 +39,7 @@ function BoardContents() {
         }
     }, [openNewColumnForm]);
 
+    //replace by loading
     if (isEmpty(board)) {
         return (
             <div className="not-found"
@@ -49,26 +50,55 @@ function BoardContents() {
     }
 
     const onColumnDrop = (dropResult) => {
-        let newColumns = [...columns];
+        let newColumns = cloneDeep(columns); // let newColumns = [...columns]; but more effective
         newColumns = applyDrag(newColumns, dropResult);
 
-        let newBoard = { ...board };
+        let newBoard = cloneDeep(board);
         newBoard.columnOrder = newColumns.map( col => col._id);
         newBoard.columns = newColumns;
 
         setColumns(newColumns);
         setBoard(newBoard);
+        //call API update columnOrder in board detail
+        updateBoard(newBoard._id, newBoard).catch( () => {
+            //set column and board = old state before error
+            setColumns(columns);
+            setBoard(board);
+        });
     };
 
     const onCardDrop = (columnId, dropResult) => {
         if ( dropResult.removedIndex !== null || dropResult.addedIndex !== null) {
-            let newColumns = [...columns];
+            let newColumns = cloneDeep(columns);
 
             let currentColumn = newColumns.find( col => col._id === columnId);
             currentColumn.cards = applyDrag(currentColumn.cards, dropResult);
             currentColumn.cardOrder = currentColumn.cards.map(item => item._id);
 
             setColumns(newColumns);
+            if (dropResult.removedIndex !== null && dropResult.addedIndex !== null) {
+                /**
+                 * move card inside its column: update columnOrder
+                 * 1. call API update cardOrder in current column
+                 */
+                updateColumn(currentColumn._id, currentColumn).catch( () => setColumns(columns));
+            } else {
+                /**
+                 * move card between 2 columns
+                 */
+                //1. call API update cardOrder in current column
+                updateColumn(currentColumn._id, currentColumn).catch( () => setColumns(columns));
+
+                if (dropResult.addedIndex !== null) {
+                    let currentCard = cloneDeep(dropResult.payload);
+                    currentCard.columnId = currentColumn._id;
+
+                    // 2. call API update columnId in current card
+                    updateCard(currentCard._id, currentCard).catch( (error) => {
+                        console.log(error);
+                    });
+                }
+            }
         }
     };
 
@@ -85,10 +115,10 @@ function BoardContents() {
 
         //call API createNewColumn
         createNewColumn(newColumnToAdd).then( column => {
-            let newColumn = [...columns];
+            let newColumn = cloneDeep(columns);
             newColumn.push( column );
 
-            let newBoard = { ...board };
+            let newBoard = cloneDeep(board);
             newBoard.columnOrder = newColumn.map( col => col._id);
             newBoard.columns = newColumn;
 
@@ -102,7 +132,7 @@ function BoardContents() {
     const onUpdateColumnState = (newColumnToUpdate) => {
         const columnIdToUpdate = newColumnToUpdate._id;
 
-        let newColumn = [...columns];
+        let newColumn = cloneDeep(columns);
         const columnIndexToUpdate = newColumn.findIndex(i => i._id === columnIdToUpdate);
 
         if (newColumnToUpdate._destroy === true) {
@@ -129,7 +159,7 @@ function BoardContents() {
 
         // newColumn.push(newColumnToUpdate);
 
-        let newBoard = { ...board };
+        let newBoard = cloneDeep(board);
         newBoard.columnOrder = newColumn.map( col => col._id);
         newBoard.columns = newColumn;
 
